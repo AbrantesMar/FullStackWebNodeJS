@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 var db = require('../DB/DbContext'),
     FolderRepository = require('../DB/FolderRepository').Object,
     //FileRepository = require('../DB/FileRepository'),
@@ -14,7 +14,7 @@ FolderBusiness.prototype.Repository = null;
 FolderBusiness.prototype.RepositoryFile = null;
 FolderBusiness.prototype.dbConn = null;
 
-FolderBusiness.prototype.objectError = "Invalid data while trying {0} object."
+FolderBusiness.prototype.objectError = "Invalid data while trying {0} object.";
 
 // Folder Methods
 FolderBusiness.prototype.Save = function (folder, callback) {
@@ -23,23 +23,8 @@ FolderBusiness.prototype.Save = function (folder, callback) {
         return;
     }
 
-    async.waterfall([
-        function (cb)
-        {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb)
-        {
-            _self.Repository = new FolderRepository(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.Insert(folder,cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
+    _self.water(function (cb) {
+        _self.Repository.Insert(folder, cb);
     });
 };
 
@@ -49,22 +34,8 @@ FolderBusiness.prototype.Delete = function (filter, callback) {
         return;
     }
 
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            //_self.RepositoryFile = FileRepository.Instance(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.Delete(filter, cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
+    _self.water(function (cb) {
+        _self.Repository.Delete(filter, cb);
     });
 };
 
@@ -74,23 +45,10 @@ FolderBusiness.prototype.DeleteById = function (id, callback) {
         return;
     }
 
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            //_self.RepositoryFile = FileRepository.Instance(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.DeleteById(id, cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
+    _self.water(function (cb) {
+        _self.Repository.DeleteById(id, cb);
     });
+    
 };
 
 FolderBusiness.prototype.Update = function (filter, set, callback)
@@ -100,22 +58,10 @@ FolderBusiness.prototype.Update = function (filter, set, callback)
         return;
     }
 
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.Update(filter, set, cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
+    _self.water(function (cb) {
+        _self.Repository.Update(filter, set, cb);
     });
+
 };
 
 FolderBusiness.prototype.Find = function (filter, callback) {
@@ -125,22 +71,9 @@ FolderBusiness.prototype.Find = function (filter, callback) {
         return;
     }
 
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.Find(filter, cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
-        });
+    _self.water(function (cb) {
+        _self.Repository.Find(filter, cb);
+    });
 };
 
 FolderBusiness.prototype.FindById = function (id, callback) {
@@ -149,24 +82,10 @@ FolderBusiness.prototype.FindById = function (id, callback) {
         return;
     }
 
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            //_self.RepositoryFile = FileRepository.Instance(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.FindById(id, cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
-        });
-
+    _self.water(function (cb) {
+        _self.Repository.FindById(id, cb);
+    });
+    
 };
 
 FolderBusiness.prototype.FindWithFiles = function (filter, cb) {
@@ -182,23 +101,8 @@ FolderBusiness.prototype.FindWithFiles = function (filter, cb) {
 };
 
 FolderBusiness.prototype.GetAll = function (callback) {
-
-    async.waterfall([
-        function (cb) {
-            db.GetDbConn(cb);
-        },
-        function (conn, cb) {
-            _self.Repository = new FolderRepository(conn);
-            //_self.RepositoryFile = FileRepository.Instance(conn);
-            _self.dbConn = conn;
-            cb(null);
-        },
-        function (cb) {
-            _self.Repository.GetAll(cb);
-        }
-    ], function (err, results) {
-        _self.Dispose();
-        callback(err, results);
+    _self.water(function (cb) {
+        _self.Repository.GetAll(cb);
     });
 };
 
@@ -283,6 +187,28 @@ FolderBusiness.prototype.GetAllWithFiles = function (cb) {
 //        cb(err, results);
 //    });
 //};
+
+FolderBusiness.prototype.water = function (callBackOperation) {
+    async.waterfall([
+        function (cb) {
+            db.GetDbConn(cb);
+        },
+        function (conn, cb) {
+            _self.Repository = new FolderRepository(conn);
+            _self.dbConn = conn;
+            cb(null);
+        },
+        callBackOperation
+    ], function (err, results) {
+        _self.Dispose();
+        callback(err, results);
+    });
+};
+
+FolderBusiness.prototype.returnCall = function (err, results) {
+    _self.Dispose();
+    callback(err, results);
+};
 
 FolderBusiness.prototype.validateFolder = function (folder) {
     return true;
